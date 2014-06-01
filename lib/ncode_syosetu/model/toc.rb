@@ -10,13 +10,10 @@ module NcodeSyosetu
         @abstract = page.search(".novel_ex").text.chomp
 
         @episodes = []
-        page.search(".novel_sublist tr").each do |sub_item|
+        page.search("dd.subtitle a").each do |sub_item|
           episode = { text: sub_item.text.gsub(/\s+/, " ").chomp }
-          link = sub_item.search("a")
-          unless link.empty?
-            if link.attr("href").value =~ %r[/(\d+)/?$]
-              episode[:number] = $1.to_i
-            end
+          if sub_item.attr("href") =~ %r[/(\d+)/?$]
+            episode[:number] = $1.to_i
           end
           @episodes << episode
         end
@@ -24,7 +21,7 @@ module NcodeSyosetu
         @body_html =
           page.search(".novel_writername").to_html <<
           page.search(".novel_ex").to_html <<
-          page.search(".novel_sublist").to_html
+          page.search(".index_box").to_html
       end
 
       def html
