@@ -11,8 +11,8 @@ module NcodeSyosetu
         @number = number
 
         @body_html =
-          page.search(".novel_subtitle").to_html <<
-          page.search(".novel_view").to_html
+          page.search(".novel_subtitle").to_xhtml <<
+          page.search(".novel_view").to_xhtml
       end
 
       def html

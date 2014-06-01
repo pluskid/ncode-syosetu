@@ -19,9 +19,9 @@ module NcodeSyosetu
         end
 
         @body_html =
-          page.search(".novel_writername").to_html <<
-          page.search(".novel_ex").to_html <<
-          page.search(".index_box").to_html
+          page.search(".novel_writername").to_xhtml <<
+          page.search(".novel_ex").to_xhtml <<
+          page.search(".index_box").to_xhtml
       end
 
       def html
