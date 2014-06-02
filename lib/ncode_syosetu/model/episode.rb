@@ -10,9 +10,54 @@ module NcodeSyosetu
         @title = title
         @number = number
 
+        begin
+          require 'natto'
+          require 'nkf'
+          @nm = Natto::MeCab.new
+        rescue
+          @nm = nil
+        end
+
+        process_nodes(page.search(".novel_view"))
         @body_html =
           page.search(".novel_subtitle").to_xhtml <<
           page.search(".novel_view").to_xhtml
+      end
+
+      def process_nodes(nodes)
+        unless @nm.nil?
+          # if MeCab and natto available, add yomi annotation
+          nodes.each { |n| process_node(n) }
+        end
+      end
+
+      def process_node(node)
+        unless node.node_name == 'ruby'
+          if node.node_name == 'text'
+            node.replace(annotate_text(node.text))
+          else
+            process_nodes(node.children)
+          end
+        end
+      end
+
+      def annotate_text(text)
+        if text =~ /\A\s*\Z/
+          text
+        else
+          memo = []
+          text.gsub!(' ', '###') # mecab eats whitespaces
+          @nm.parse(text) do |n|
+            if n.char_type == 2                  # kanji
+              yomi = n.feature.split(',')[-2]    # katakana yomi
+              memo << "<ruby><rb>" + n.surface + "</rb><rp>(</rp><rt>" +
+                NKF.nkf('-h1 -w', yomi) + "</rt><rp>)</rp></ruby>"
+            else
+              memo << n.surface                  # leave others alone
+            end
+          end
+          memo.join.gsub('###', ' ')
+        end
       end
 
       def html
